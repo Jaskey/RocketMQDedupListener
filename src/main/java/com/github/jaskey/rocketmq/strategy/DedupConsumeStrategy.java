@@ -73,17 +73,17 @@ public class DedupConsumeStrategy implements ConsumeStrategy {
     /**
      *     消费消息，末尾消费失败会删除消费记录，消费成功则更新消费状态
      */
-    private boolean doHandleMsgAndUpdateStatus(final Function<MessageExt, Boolean> consumeCallbak , final MessageExt messageExt, final DedupElement dedupElement) {
+    private boolean doHandleMsgAndUpdateStatus(final Function<MessageExt, Boolean> consumeCallback , final MessageExt messageExt, final DedupElement dedupElement) {
 
 
         if (dedupElement.getMsgUniqKey()==null) {
             log.warn("dedup key is null , consume msg but not update status{}", messageExt.getMsgId());
-            return consumeCallbak.apply(messageExt);
+            return consumeCallback.apply(messageExt);
         } else {
             IPersist persist = dedupConfig.getPersist();
             boolean consumeRes = false;
             try {
-                consumeRes = consumeCallbak.apply(messageExt);
+                consumeRes = consumeCallback.apply(messageExt);
             } catch (Throwable e) {
                 //消费失败了，删除这个key
                 try {
