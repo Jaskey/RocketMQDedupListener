@@ -1,5 +1,9 @@
 # RocketMQDedupListener
-通用的RocketMQ消息幂等去重消费者工具类
+通用的RocketMQ消息幂等去重消费者工具类，开箱即用
+
+1. 支持利用Redis或者MySQL做幂等表。
+2. 支持业务主键去重或消息ID去重（默认）
+3. 支持消息重复并发控制（重复的消息消费成功/失败前，不会同时消费第二条）
 
 
 # Quick Start
