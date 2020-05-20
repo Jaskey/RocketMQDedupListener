@@ -135,8 +135,14 @@ public class SampleListener extends DedupConcurrentListener {
 ------------------------
 
 ## MYSQL去重支持
+若希望使用MYSQL存储消息消费记录，使用上仅需把StringRedisTemplate改成JdbcTemplate：
 
-若希望使用MYSQL存储消息消费记录，需要预先建立一张消息去重表，结构如下:
+            JdbcTemplate jdbcTemplate = null;// 这里省略获取JDBCTemplate的过程
+            DedupConfig dedupConfig = DedupConfig.enableDedupConsumeConfig(appName, jdbcTemplate);
+
+
+
+同时需要预先建立一张消息去重表，结构如下:
 
 ```
 -- ----------------------------
