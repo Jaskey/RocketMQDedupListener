@@ -102,8 +102,8 @@ public class SampleListener extends DedupConcurrentListener {
 ## 测试并发重复消费：
 
 
-1. 模拟正常消息：发送消息到TEST-TOPIC， 报文为，.test-ljj-msg123
-2. 模拟重复消息：马上（这个例子需要小于3秒）再发送消息到TEST-TOPIC，报文一样是.test-ljj-msg123
+1. 模拟正常消息：发送消息到TEST-TOPIC， 报文为 test-ljj-msg123
+2. 模拟重复消息：马上（这个例子需要小于3秒）再发送消息到TEST-TOPIC，报文一样是 test-ljj-msg123
 
 
 由于这里需要一些特殊说明，以下日志增加了注释
