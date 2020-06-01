@@ -77,8 +77,8 @@ public class SampleListener extends DedupConcurrentListener {
 
 ## 一、测试普通的消息重复：
 
-1.模拟正常消息：发送消息到TEST-TOPIC， 报文为，test-ljj-msg1234
-2.模拟重复消息：隔几秒后（这个例子需要大于3秒），再发送消息到TEST-TOPIC，报文一样是test-ljj-msg1234
+1. 模拟正常消息：发送消息到TEST-TOPIC， 报文为，test-ljj-msg1234
+2. 模拟重复消息：隔几秒后（这个例子需要大于3秒），再发送消息到TEST-TOPIC，报文一样是test-ljj-msg1234
 
 
 
