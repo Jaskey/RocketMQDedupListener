@@ -57,13 +57,13 @@ public class DedupConsumeStrategy implements ConsumeStrategy {
         } else {//有消费过/中的，做对应策略处理
             String val = persist.get(dedupElement);
             if (CONSUME_STATUS_CONSUMING.equals(val)) {//正在消费中，稍后重试
-                log.warn("the same message is considered consuming, try consume later dedupKey : {}, {}, {}", dedupElement, messageExt.getMsgId(), persist.getClass().getSimpleName());
+                log.warn("the same message is considered consuming, try consume later dedupKey : {}, {}, {}", persist.toPrintInfo(dedupElement), messageExt.getMsgId(), persist.getClass().getSimpleName());
                 return false;
             } else if(CONSUME_STATUS_CONSUMED.equals(val)){//证明消费过了，直接消费认为成功
-                log.warn("message has been consumed before! dedupKey = {}, msgId : {} , so just ack. {}", dedupElement, messageExt.getMsgId(), persist.getClass().getSimpleName());
+                log.warn("message has been consumed before! dedupKey : {}, msgId : {} , so just ack. {}", persist.toPrintInfo(dedupElement), messageExt.getMsgId(), persist.getClass().getSimpleName());
                 return true;
-            } else {//redis值不可知，降级，直接消费
-                log.warn("[NOTIFYME]未知的REDIS值，忽略去重结果，仍然执行消费 dedupKey {}, {}, {} ",dedupElement, messageExt.getMsgId(), persist.getClass().getSimpleName());
+            } else {//非法结果，降级，直接消费
+                log.warn("[NOTIFYME]unknown consume result {}, ignore dedup, continue consuming,  dedupKey : {}, {}, {} ", val, persist.toPrintInfo(dedupElement), messageExt.getMsgId(), persist.getClass().getSimpleName());
                 return doHandleMsgAndUpdateStatus(consumeCallback,messageExt, dedupElement);
             }
         }

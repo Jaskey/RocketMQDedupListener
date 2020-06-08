@@ -16,4 +16,8 @@ public interface IPersist {
     void markConsumed(DedupElement dedupElement, long dedupRecordReserveMinutes);
 
     String get(DedupElement dedupElement);
+
+    default String toPrintInfo(DedupElement dedupElement) {
+        return dedupElement.toString();
+    }
 }

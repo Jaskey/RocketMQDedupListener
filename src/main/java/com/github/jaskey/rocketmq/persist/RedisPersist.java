@@ -60,6 +60,10 @@ public class RedisPersist implements IPersist {
         return redisTemplate.opsForValue().get(dedupKey);
     }
 
+    @Override
+    public String toPrintInfo(DedupElement dedupElement) {
+        return buildDedupMessageRedisKey(dedupElement.getApplication(), dedupElement.getTopic(), dedupElement.getTag(), dedupElement.getMsgUniqKey());
+    }
 
     private  String buildDedupMessageRedisKey(String applicationName, String topic, String tag, String msgUniqKey) {
         if (StringUtils.isEmpty(msgUniqKey)) {
