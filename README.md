@@ -10,6 +10,7 @@
 # 内置去重原理
 
 见以下流程图
+
 ![image](https://raw.githubusercontent.com/Jaskey/RocketMQDedupListener/master/dedup-flow.png)
 
 
