@@ -7,6 +7,13 @@
 4. 接近于EXACTLY-ONCE语义（消息只会且仅会被成功消费一次），极端场景下则为ATLEAST-ONCE语义（消息至少被成功消费一次，不会因为去重的增强而丢失消息）
 
 
+# 内置去重原理
+
+见以下流程图
+![image](https://raw.githubusercontent.com/Jaskey/RocketMQDedupListener/master/dedup-flow.png)
+
+
+
 # Quick Start
 
 ### 1、继承`DedupConcurrentListener`类，实现消费回调和去重键的设置回调
