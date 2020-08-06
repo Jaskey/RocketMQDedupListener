@@ -29,7 +29,7 @@ public class SampleListener extends DedupConcurrentListener {
     //基于什么做消息去重，每一类不同的消息都可以不一样，做去重之前会尊重此方法返回的值
     @Override
     protected String dedupMessageKey(MessageExt messageExt) {
-        //为了简单示意，这里直接使用消息体作为去重键
+        //为了简单示意，这里直接使用消息体作为去重键，正式使用时候不建议这样使用
         if ("TEST-TOPIC".equals(messageExt.getTopic())) {
             return new String(messageExt.getBody());
         } else {//其他使用默认的配置（消息id）
@@ -56,14 +56,16 @@ public class SampleListener extends DedupConcurrentListener {
 
 ```
 
-            //利用Redis做幂等表
             DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("TEST-APP1");
             consumer.subscribe("TEST-TOPIC", "*");
 
-            String appName = consumer.getConsumerGroup();
-            StringRedisTemplate stringRedisTemplate = null;// 这里省略获取StringRedisTemplate的过程
+            //START:区别于普通RocketMQ使用的代码
+            String appName = consumer.getConsumerGroup();//针对什么应用做去重，相同的消息在不同应用的去重是隔离处理的
+            StringRedisTemplate stringRedisTemplate = null;// 这里省略获取StringRedisTemplate的过程，具体的消息幂等表会保存到Redis中
             DedupConfig dedupConfig = DedupConfig.enableDedupConsumeConfig(appName, stringRedisTemplate);
             DedupConcurrentListener messageListener = new SampleListener(dedupConfig);
+            //END:区别于普通RocketMQ使用的代码
+
 
             consumer.registerMessageListener(messageListener);
             consumer.start();
@@ -146,7 +148,7 @@ public class SampleListener extends DedupConcurrentListener {
 ## MYSQL去重支持
 若希望使用MYSQL存储消息消费记录，使用上仅需把StringRedisTemplate改成JdbcTemplate：
 
-            JdbcTemplate jdbcTemplate = null;// 这里省略获取JDBCTemplate的过程
+            JdbcTemplate jdbcTemplate = null;// 这里省略获取JDBCTemplate的过程，幂等表将使用MySQL的t_rocketmq_dedup存储
             DedupConfig dedupConfig = DedupConfig.enableDedupConsumeConfig(appName, jdbcTemplate);
 
 
