@@ -14,6 +14,9 @@
 ![image](https://raw.githubusercontent.com/Jaskey/RocketMQDedupListener/master/dedup-flow.png)
 
 
+# 去重实现的来龙去脉
+
+可以参考本人在官方微信发表的博文： [RocketMQ消息幂等的通用解决方案](https://mp.weixin.qq.com/s/X25Jw-sz3XItVrXRS6IQdg) 
 
 # Quick Start
 
@@ -175,3 +178,7 @@ UNIQUE KEY `uniq_key` (`application_name`,`topic`,`tag`,`msg_uniq_key`) USING BT
 
 说明:因为需要支持不同的应用，所以需要存储application_name，因为同一个业务主键可能来自不同的topic/tag，所以也需要存储起来。
 
+
+# 关于作者
+
+Apache RocketMQ Committer，知乎专栏 [RocketMQ详解](https://zhuanlan.zhihu.com/rocketmq)作者，RoceketMQ官微投稿者
