@@ -179,6 +179,10 @@ UNIQUE KEY `uniq_key` (`application_name`,`topic`,`tag`,`msg_uniq_key`) USING BT
 说明:因为需要支持不同的应用，所以需要存储application_name，因为同一个业务主键可能来自不同的topic/tag，所以也需要存储起来。
 
 
+### 一直消费失败会否引起死循环
+
+不会。失败/消费中触发的延迟消费依赖与RocketMQ原生的重试机制，默认是16次。如果有希望调整延迟的时间和重试次数，需要自行调整Consumer配置。
+
 # 关于作者
 
 Apache RocketMQ Committer，知乎专栏 [RocketMQ详解](https://zhuanlan.zhihu.com/rocketmq)作者，RoceketMQ官微投稿者
