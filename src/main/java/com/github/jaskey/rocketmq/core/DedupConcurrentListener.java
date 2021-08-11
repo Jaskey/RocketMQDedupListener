@@ -27,6 +27,10 @@ public abstract class DedupConcurrentListener implements MessageListenerConcurre
     // 默认不去重
     private DedupConfig dedupConfig = DedupConfig.disableDupConsumeConfig("NOT-SET-CONSUMER-GROUP");
 
+    /**
+     * 默认策略不去重
+     */
+    private ConsumeStrategy strategy = new NormalConsumeStrategy();
 
     /**
      * 默认不去重
@@ -41,6 +45,9 @@ public abstract class DedupConcurrentListener implements MessageListenerConcurre
      */
     public DedupConcurrentListener(DedupConfig dedupConfig) {
         this.dedupConfig = dedupConfig;
+        if (dedupConfig.getDedupStrategy() == DedupConfig.DEDUP_STRATEGY_CONSUME_LATER) {
+            strategy = new DedupConsumeStrategy(dedupConfig, this::dedupMessageKey);
+        }
         log.info("Construct QBConcurrentRMQListener with dedupConfig {}", dedupConfig);
     }
 
@@ -103,13 +110,6 @@ public abstract class DedupConcurrentListener implements MessageListenerConcurre
 
     //消费消息，带去重的逻辑
     private boolean handleMsgInner(final MessageExt messageExt) {
-        ConsumeStrategy strategy = new NormalConsumeStrategy();
-
-        Function<MessageExt, String> dedupKeyFunction = messageExt1 -> dedupMessageKey(messageExt);
-
-        if (dedupConfig.getDedupStrategy() == DedupConfig.DEDUP_STRATEGY_CONSUME_LATER) {
-             strategy = new DedupConsumeStrategy(dedupConfig, dedupKeyFunction);
-        }
         //调用对应的策略
         return strategy.invoke(DedupConcurrentListener.this::doHandleMsg, messageExt);
     }
