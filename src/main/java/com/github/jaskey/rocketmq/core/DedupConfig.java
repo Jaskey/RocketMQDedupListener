@@ -47,6 +47,7 @@ public class DedupConfig {
      */
     private long dedupRecordReserveMinutes = 60 * 24;
 
+    private int degrationTimes = 10000;
 
     //默认拿uniqkey 作为去重的标识
     public static Function<MessageExt, String> defaultDedupMessageKeyFunction = messageExt -> {
@@ -116,5 +117,7 @@ public class DedupConfig {
         this.dedupRecordReserveMinutes = dedupRecordReserveMinutes;
     }
 
-
+    public void setDegrationTimes(int degrationTimes) {
+        this.degrationTimes = degrationTimes;
+    }
 }

@@ -4,10 +4,12 @@ package com.github.jaskey.rocketmq.strategy;
 import com.github.jaskey.rocketmq.core.DedupConfig;
 import com.github.jaskey.rocketmq.persist.DedupElement;
 import com.github.jaskey.rocketmq.persist.IPersist;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.springframework.data.redis.RedisConnectionFailureException;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import static com.github.jaskey.rocketmq.persist.IPersist.CONSUME_STATUS_CONSUMED;
@@ -22,7 +24,6 @@ import static com.github.jaskey.rocketmq.persist.IPersist.CONSUME_STATUS_CONSUMI
  *
  */
 @Slf4j
-@AllArgsConstructor
 public class DedupConsumeStrategy implements ConsumeStrategy {
 
 
@@ -32,7 +33,16 @@ public class DedupConsumeStrategy implements ConsumeStrategy {
     //获取去重键的函数
     private final Function<MessageExt, String> dedupMessageKeyFunction;
 
+    public static Map<String, Integer> dupInfo = new ConcurrentHashMap<>();
 
+    private boolean degradation = false;
+
+    private int skipTimes = 0;
+
+    public DedupConsumeStrategy(DedupConfig dedupConfig, Function<MessageExt, String> dedupMessageKeyFunction) {
+        this.dedupConfig = dedupConfig;
+        this.dedupMessageKeyFunction = dedupMessageKeyFunction;
+    }
 
     @Override
     public boolean invoke(Function<MessageExt, Boolean> consumeCallback, MessageExt messageExt) {
@@ -41,13 +51,27 @@ public class DedupConsumeStrategy implements ConsumeStrategy {
 
 
     private boolean doInvoke(Function<MessageExt, Boolean> consumeCallback, MessageExt messageExt) {
-
+        // 如果redis连接失败则降级去重功能，连续跳过若干次之后再重连一次redis，若redis恢复则重新开启去重
+        if (degradation && (++skipTimes % dedupConfig.getDegrationTimes() != 0)) {
+            log.warn("skip dedup times: {}", skipTimes);
+            return consumeCallback.apply(messageExt);
+        }
         IPersist persist = dedupConfig.getPersist();
         DedupElement dedupElement = new DedupElement(dedupConfig.getApplicationName(), messageExt.getTopic(), messageExt.getTags()==null ? "" : messageExt.getTags(), dedupMessageKeyFunction.apply(messageExt));
         Boolean shouldConsume = true;
 
         if (dedupElement.getMsgUniqKey() != null) {
-            shouldConsume = persist.setConsumingIfNX(dedupElement, dedupConfig.getDedupProcessingExpireMilliSeconds());
+            try {
+                shouldConsume = persist.setConsumingIfNX(dedupElement, dedupConfig.getDedupProcessingExpireMilliSeconds());
+                degradation = false;
+                skipTimes = 0;
+            } catch (RedisConnectionFailureException e) {
+                log.warn("redis connect failure, dedup service degradation", e);
+                degradation = true;
+                skipTimes++;
+                consumeCallback.apply(messageExt);
+                return true;
+            }
         }
 
         //设置成功，证明应该要消费
@@ -56,6 +80,14 @@ public class DedupConsumeStrategy implements ConsumeStrategy {
             return doHandleMsgAndUpdateStatus(consumeCallback,messageExt, dedupElement);
         } else {//有消费过/中的，做对应策略处理
             String val = persist.get(dedupElement);
+            String key = dedupElement.getTopic() + "_" +dedupElement.getApplication();
+            if (dupInfo.containsKey(key)) {
+                int count = dupInfo.get(key);
+                dupInfo.put(key, ++count);
+            } else {
+                dupInfo.put(key, 1);
+            }
+
             if (CONSUME_STATUS_CONSUMING.equals(val)) {//正在消费中，稍后重试
                 log.warn("the same message is considered consuming, try consume later dedupKey : {}, {}, {}", persist.toPrintInfo(dedupElement), messageExt.getMsgId(), persist.getClass().getSimpleName());
                 return false;
