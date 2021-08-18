@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.jaskey</groupId>
+    <groupId>com.iflytek</groupId>
     <artifactId>rocketmq-dedup-listener</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <build>
         <plugins>
             <plugin>
@@ -54,7 +54,21 @@
             <version>1.6.4</version>
         </dependency>
     </dependencies>
-
+    <distributionManagement>
+        <!--涉及到权限，需要配置BU/BG的仓库 -->
+        <repository>
+            <id>mvn-releases</id>
+            <url>
+                https://artifacts.iflytek.com/artifactory/stc-mvn-release-private/
+            </url>
+        </repository>
+        <snapshotRepository>
+            <id>mvn-snapshots</id>
+            <url>
+                https://artifacts.iflytek.com/artifactory/stc-mvn-snapshot-private/
+            </url>
+        </snapshotRepository>
+    </distributionManagement>
 
 
 </project>
